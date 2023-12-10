@@ -7,6 +7,8 @@ from pieces.queen import Queen
 
 class GameState():
     def __init__(self, game):
+        self.whiteMove = True
+
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.board[7][0] = Rook(game, 7, 0, 'wR')
         self.board[7][7] = Rook(game, 7, 7, 'wR')
@@ -30,4 +32,29 @@ class GameState():
             self.board[6][i] = Pawn(game, 6, i, 'wP')
             self.board[1][i] = Pawn(game, 1, i, 'bP')
 
+    def movePiece(self, move):
+        self.board[move.startRow][move.startCol] = None
+        move.movingPiece.moveTo(move.endRow, move.endCol)
+        self.board[move.endRow][move.endCol] = move.movingPiece
+        self.whiteMove = not self.whiteMove
 
+class Move():
+    def __init__(self, start, end, board):
+        self.startRow = start[0]
+        self.startCol = start[1]
+        self.endRow = end[0]
+        self.endCol = end[1]
+        self.movingPiece = board[self.startRow][self.startCol]
+        self.capturedSquare = board[self.endRow][self.endCol]
+
+
+#[[bR, bN, bB, bQ, bK, bB, bN, bR] <----8th rank (0th in the array)
+# [bP, bP, bP, bP, bP, bP, bP, bP]
+# []
+# []
+# []
+# []
+# [wP, wP, wP, wP, wP, wP, wP, wP]
+# [wR, wN, wB, wQ, wK, wB, wK, wR]] <----1st rank (7th in the array)
+#  ^                            ^
+#  a file (0)                   h file (7)
