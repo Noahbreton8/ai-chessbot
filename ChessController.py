@@ -15,6 +15,9 @@ def main():
     gs = GameState(game)
     drawBoard(screen, gs.board)
 
+    validMoves = gs.getAllValidMoves()
+    moveMade = False #until valid move is made don't regenerate validMoves
+
     currSelection = () #keeps track of current choice
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
@@ -23,9 +26,9 @@ def main():
         for event in game.event.get():
             if event.type == game.QUIT:
                 gameOn = False
-
+            
             #Selecting squares
-            if event.type == game.MOUSEBUTTONDOWN:
+            elif event.type == game.MOUSEBUTTONDOWN:
                 x,y = game.mouse.get_pos()
 
                 #Turns mouse position into rank and file
@@ -54,10 +57,22 @@ def main():
                         # second click is an opponent's piece or a empty square
                         else:
                             move = Move(playerMoves[0], playerMoves[1], gs.board)
-                            gs.movePiece(move)
+                            print(move.getChessNotation())
+                            if move in validMoves:
+                                moveMade = True
+                                gs.movePiece(move)
                             currSelection = []
                             playerMoves = []
-
+            
+            elif event.type == game.KEYDOWN:
+                if event.key == game.K_u:
+                    gs.undoMove()
+                    moveMade = True
+        
+        if moveMade:
+            validMoves = gs.getAllValidMoves()
+            moveMade = False
+        
         drawBoard(screen, gs.board)
         game.display.flip()
     game.quit()

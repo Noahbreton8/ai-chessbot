@@ -7,7 +7,8 @@ from pieces.queen import Queen
 
 class GameState():
     def __init__(self, game):
-        self.whiteMove = True
+        self.whiteTurn = True
+        self.moveLog = []
 
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.board[7][0] = Rook(game, 7, 0, 'wR')
@@ -33,12 +34,42 @@ class GameState():
             self.board[1][i] = Pawn(game, 1, i, 'bP')
 
     def movePiece(self, move):
-        self.board[move.startRow][move.startCol] = None
-        move.movingPiece.moveTo(move.endRow, move.endCol)
-        self.board[move.endRow][move.endCol] = move.movingPiece
-        self.whiteMove = not self.whiteMove
+        self.board[move.startRow][move.startCol].moveTo(move.endRow, move.endCol, self.board)
+        self.whiteTurn = not self.whiteTurn
+        self.moveLog.append(move)
+
+    def undoMove(self):
+        if len(self.moveLog) != 0:
+            move = self.moveLog.pop() 
+            self.board[move.endRow][move.endCol].moveTo(move.startRow, move.startCol, self.board)
+            self.board[move.endRow][move.endCol] = move.capturedSquare
+            self.whiteTurn = not self.whiteTurn
+
+    def getAllPossibleMoves(self):
+        moves = []
+        for r in range(8):
+            for c in range(8):
+                if self.board[r][c] != None:
+                    piece = self.board[r][c]
+                    if (piece.colour == 'w' and self.whiteTurn) or (piece.colour == 'b' and not self.whiteTurn):
+                        moves = piece.getMoves(moves, self.board)
+        return moves
+        
+    
+    def getAllValidMoves(self):
+        return self.getAllPossibleMoves()
+        
+                        
+
+        
 
 class Move():
+    ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
+    rowsToRanks = {v: k for k, v in ranksToRows.items()}
+
+    filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+    colsToFiles = {v: k for k, v in filesToCols.items()}
+
     def __init__(self, start, end, board):
         self.startRow = start[0]
         self.startCol = start[1]
@@ -46,7 +77,19 @@ class Move():
         self.endCol = end[1]
         self.movingPiece = board[self.startRow][self.startCol]
         self.capturedSquare = board[self.endRow][self.endCol]
+        self.moveId = self.getChessNotation()
 
+    def __eq__(self, other):
+        if not isinstance(other, Move):
+            return False
+        
+        return self.moveId == other.moveId
+
+    def getChessNotation(self):
+        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+
+    def getRankFile(self, r, c):
+        return self.colsToFiles[c] + self.rowsToRanks[r]
 
 #[[bR, bN, bB, bQ, bK, bB, bN, bR] <----8th rank (0th in the array)
 # [bP, bP, bP, bP, bP, bP, bP, bP]
