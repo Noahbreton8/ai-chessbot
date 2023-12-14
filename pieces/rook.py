@@ -1,9 +1,6 @@
-from .piece import Piece
+from .slidingPiece import SlidingPiece
 
-class Rook(Piece):
+class Rook(SlidingPiece):
     def __init__(self, *args):
         self.hasMoved = False
         super().__init__(*args)
-    
-    def getMoves(self, moves, board):
-        return moves

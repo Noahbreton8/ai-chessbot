@@ -1,5 +1,5 @@
-from .piece import Piece
+from .slidingPiece import SlidingPiece
 
-class Queen(Piece):
-    def getMoves(self, moves, board):
-        return moves
+class Queen(SlidingPiece):
+    def __init__(self, *args):
+        super().__init__(*args)

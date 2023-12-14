@@ -16,5 +16,8 @@ class Piece():
         self.col = newCol
         board[self.row][self.col] = self
 
+    def isColour(self, whiteTurn):
+        return (self.colour == 'w' and whiteTurn) or (self.colour == 'b' and not whiteTurn)
+
     def __str__(self):
         return self.identity

@@ -13,25 +13,25 @@ class GameState():
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.board[7][0] = Rook(game, 7, 0, 'wR')
         self.board[7][7] = Rook(game, 7, 7, 'wR')
-        self.board[7][1] = Knight(game, 7, 1, 'wN')
-        self.board[7][6] = Knight(game, 7, 6, 'wN')
+        # self.board[7][1] = Knight(game, 7, 1, 'wN')
+        # self.board[7][6] = Knight(game, 7, 6, 'wN')
         self.board[7][2] = Bishop(game, 7, 2, 'wB')
         self.board[7][5] = Bishop(game, 7, 5, 'wB')
         self.board[7][3] = Queen(game, 7, 3, 'wQ')
-        self.board[7][4] = King(game, 7, 4, 'wK')
+        # self.board[7][4] = King(game, 7, 4, 'wK')
 
         self.board[0][0] = Rook(game, 0, 0, 'bR')
         self.board[0][7] = Rook(game, 0, 7, 'bR')
-        self.board[0][1] = Knight(game, 0, 1, 'bN')
-        self.board[0][6] = Knight(game, 0, 6, 'bN')
+        # self.board[0][1] = Knight(game, 0, 1, 'bN')
+        # self.board[0][6] = Knight(game, 0, 6, 'bN')
         self.board[0][2] = Bishop(game, 0, 2, 'bB')
         self.board[0][5] = Bishop(game, 0, 5, 'bB')
         self.board[0][3] = Queen(game, 0, 3, 'bQ')
-        self.board[0][4] = King(game, 0, 4, 'bK')
+        # self.board[0][4] = King(game, 0, 4, 'bK')
 
-        for i in range(8):
-            self.board[6][i] = Pawn(game, 6, i, 'wP')
-            self.board[1][i] = Pawn(game, 1, i, 'bP')
+        # for i in range(8):
+        #     self.board[6][i] = Pawn(game, 6, i, 'wP')
+            # self.board[1][i] = Pawn(game, 1, i, 'bP')
 
     def movePiece(self, move):
         self.board[move.startRow][move.startCol].moveTo(move.endRow, move.endCol, self.board)
@@ -51,7 +51,7 @@ class GameState():
             for c in range(8):
                 if self.board[r][c] != None:
                     piece = self.board[r][c]
-                    if (piece.colour == 'w' and self.whiteTurn) or (piece.colour == 'b' and not self.whiteTurn):
+                    if piece.isColour(self.whiteTurn):
                         moves = piece.getMoves(moves, self.board)
         return moves
         
@@ -101,3 +101,13 @@ class Move():
 # [wR, wN, wB, wQ, wK, wB, wK, wR]] <----1st rank (7th in the array)
 #  ^                            ^
 #  a file (0)                   h file (7)
+
+
+# (1,0) down
+# (-1, 0) up
+# (0,1) right
+# (0, -1) left
+# (1, 1) down right
+# (1, -1) down left
+# (-1, 1) up right
+# (-1, -1) up left
