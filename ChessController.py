@@ -58,11 +58,15 @@ def main():
                         else:
                             move = Move(playerMoves[0], playerMoves[1], gs.board)
                             print(move.getAlgebraicNotation())
-                            if move in validMoves:
-                                moveMade = True
-                                gs.movePiece(move)
-                            currSelection = []
-                            playerMoves = []
+                            for i in range(len(validMoves)):
+                                if move == validMoves[i]:
+                                    moveMade = True
+                                    gs.movePiece(validMoves[i])
+                                currSelection = []
+                                playerMoves = []
+                            if not moveMade:
+                                currSelection = []
+                                playerMoves = []
             
             elif event.type == game.KEYDOWN:
                 if event.key == game.K_u:

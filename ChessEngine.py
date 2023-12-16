@@ -13,6 +13,7 @@ class GameState():
         self.bKingPos = (0, 4)
         self.checkmate = False
         self.stalemate = False
+        self.lastRemoved = None
 
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.board[7][0] = Rook(game, 7, 0, 'wR')
@@ -47,7 +48,19 @@ class GameState():
             self.wKingPos = (move.endrow, move.endcol)
         elif move.movingPiece.identity == "bK":
             self.bKingPos = (move.endrow, move.endcol)
-        
+
+        #is pawn promotion
+        if move.isPawnPromotion:
+            #save last killed piece
+            if move.capturedSquare is not None:
+                    self.lastRemoved = move.capturedSquare
+
+            if self.whiteTurn == True:
+                #create new queen
+                Queen(move.movingPiece.game, move.startRow, move.startCol, 'bQ').moveTo(move.endRow, move.endCol, self.board)
+            else: 
+                Queen(move.movingPiece.game, move.startRow, move.startCol, 'wQ').moveTo(move.endRow, move.endCol, self.board)
+
     def undoMove(self):
         if len(self.moveLog) != 0:
             move = self.moveLog.pop() 
@@ -60,6 +73,18 @@ class GameState():
                 self.wKingPos = (move.startRow, move.startCol)
             elif move.movingPiece.identity == "bK":
                 self.bKingPos =(move.startRow, move.startCol)
+
+            #is pawn promotion
+            if move.isPawnPromotion:
+                #undo queen creation
+                if self.whiteTurn == True:
+                    Pawn(move.movingPiece.game, move.endRow, move.endCol, 'wP').moveTo(move.startRow, move.startCol, self.board)
+                else: 
+                    Pawn(move.movingPiece.game, move.endRow, move.endCol, 'bP').moveTo(move.startRow, move.startCol, self.board)
+                    
+                if(self.lastRemoved is not None):
+                    self.lastRemoved.moveTo(move.endRow, move.endCol, self.board)
+                    self.lastRemoved = None
 
     def getAllPossibleMoves(self):
         moves = []
@@ -132,7 +157,10 @@ class Move():
         self.movingPiece = board[self.startRow][self.startCol]
         self.capturedSquare = board[self.endRow][self.endCol]
         self.moveId = self.getChessNotation()
-
+        self.isPawnPromotion = False
+        if (self.movingPiece.identity == 'wP' and self.endRow == 0) or (self.movingPiece.identity == 'bP' and self.endRow == 7):
+            self.isPawnPromotion = True
+        
     def __eq__(self, other):
         if not isinstance(other, Move):
             return False
