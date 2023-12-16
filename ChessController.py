@@ -57,7 +57,7 @@ def main():
                         # second click is an opponent's piece or a empty square
                         else:
                             move = Move(playerMoves[0], playerMoves[1], gs.board)
-                            print(move.getChessNotation())
+                            print(move.getAlgebraicNotation())
                             if move in validMoves:
                                 moveMade = True
                                 gs.movePiece(move)

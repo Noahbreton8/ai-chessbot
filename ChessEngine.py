@@ -142,6 +142,18 @@ class Move():
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 
+    def getAlgebraicNotation(self):
+    #always return self.movingPiece.identity's endingSquare unless 
+    #two pieces can move to same square
+    #captures 
+    #castle
+        if("P" in self.movingPiece.identity):
+            if(self.capturedSquare != None):
+                return self.getRankFile(self.startRow, self.startCol)[:-1]+ "x" + self.getRankFile(self.endRow, self.endCol)
+            return self.getRankFile(self.endRow, self.endCol)
+
+        return self.movingPiece.identity+ ": "+ self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+
     def getRankFile(self, r, c):
         return self.colsToFiles[c] + self.rowsToRanks[r]
 
