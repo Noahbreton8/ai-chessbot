@@ -18,7 +18,7 @@ class GameState():
         self.board[7][2] = Bishop(game, 7, 2, 'wB')
         self.board[7][5] = Bishop(game, 7, 5, 'wB')
         self.board[7][3] = Queen(game, 7, 3, 'wQ')
-        # self.board[7][4] = King(game, 7, 4, 'wK')
+        self.board[7][4] = King(game, 7, 4, 'wK')
 
         self.board[0][0] = Rook(game, 0, 0, 'bR')
         self.board[0][7] = Rook(game, 0, 7, 'bR')
@@ -27,7 +27,7 @@ class GameState():
         self.board[0][2] = Bishop(game, 0, 2, 'bB')
         self.board[0][5] = Bishop(game, 0, 5, 'bB')
         self.board[0][3] = Queen(game, 0, 3, 'bQ')
-        # self.board[0][4] = King(game, 0, 4, 'bK')
+        self.board[0][4] = King(game, 0, 4, 'bK')
 
         # for i in range(8):
         #     self.board[6][i] = Pawn(game, 6, i, 'wP')
@@ -58,6 +58,18 @@ class GameState():
     
     def getAllValidMoves(self):
         return self.getAllPossibleMoves()
+
+        # legalMoves = []
+        # possibleMoves = self.getAllPossibleMoves()
+        
+        # for move in possibleMoves:
+        #     self.movePiece(move)
+
+        #     opponentsMoves = self.getAllPossibleMoves()
+
+
+
+        # return legalMoves
         
                         
 
