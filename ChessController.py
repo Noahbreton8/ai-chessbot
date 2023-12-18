@@ -60,6 +60,7 @@ def main():
                             print(move.getAlgebraicNotation())
                             for i in range(len(validMoves)):
                                 if move == validMoves[i]:
+                                    #do check for pawn promotion for selection, add var for choice
                                     moveMade = True
                                     gs.movePiece(validMoves[i])
                                 currSelection = []
