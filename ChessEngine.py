@@ -165,6 +165,17 @@ class GameState():
                     self.currentCastleRights.bqs = False
                 elif move.startCol == 7:
                     self.currentCastleRights.bks = False
+        elif isinstance(move.capturedSquare, Rook):
+            if move.capturedSquare.identity == 'wR':
+                if move.capturedSquare.col == 7:
+                    self.currentCastleRights.wks = False
+                elif move.capturedSquare.col == 0:
+                    self.currentCastleRights.wqs = False
+            else:
+                if move.capturedSquare.col == 7:
+                    self.currentCastleRights.bks = False
+                elif move.capturedSquare.col == 0:
+                    self.currentCastleRights.bqs = False
 
     def getAllPossibleMoves(self):
         moves = []
@@ -180,9 +191,6 @@ class GameState():
         return moves
         
     def getAllValidMoves(self):
-        for log in self.castleRightsLog:
-            print(log.wks, log.wqs, log.bks, log.bqs, end=", ")
-        print()
         tempEnPassantPossible = self.isEnPassantPossible
         tempCastleRights = CastleRights(self.currentCastleRights.wks, self.currentCastleRights.bks, self.currentCastleRights.wqs, self.currentCastleRights.bqs)
         #generate all possible moves
