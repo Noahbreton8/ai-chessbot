@@ -13,7 +13,8 @@ def main():
     screen.fill((255, 255, 255))
 
     gs = GameState(game)
-    drawBoard(screen, gs.board)
+
+    drawGameState(screen, gs)
 
     validMoves = gs.getAllValidMoves()
     moveMade = False #until valid move is made don't regenerate validMoves
@@ -63,10 +64,10 @@ def main():
                                     #do check for pawn promotion for selection, add var for choice
                                     moveMade = True
                                     gs.movePiece(validMoves[i])
-                                currSelection = []
+                                currSelection = ()
                                 playerMoves = []
                             if not moveMade:
-                                currSelection = []
+                                currSelection = ()
                                 playerMoves = []
             
             elif event.type == game.KEYDOWN:
@@ -78,11 +79,16 @@ def main():
             validMoves = gs.getAllValidMoves()
             moveMade = False
         
-        drawBoard(screen, gs.board)
+        drawGameState(screen, gs, validMoves, currSelection)
         game.display.flip()
     game.quit()
 
-def drawBoard(screen, board):
+def drawGameState(screen, gs, validMoves = [], sqSelected = ()):
+    drawBoard(screen)
+    highlightSqaures(screen, gs, validMoves, sqSelected)
+    drawPieces(screen, gs)
+
+def drawBoard(screen):
     colours = ((204, 183, 174), (112,102,119)) #((light colour), (dark colour)) feel free to change it
     for row in range(DIMENTION):
         for col in range(DIMENTION):
@@ -90,9 +96,32 @@ def drawBoard(screen, board):
             colour = colours[(col+row) %2]
             game.draw.rect(screen, colour, game.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
+
+def highlightSqaures(screen, gs, moves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c] != None and gs.board[r][c].colour == ('w' if gs.whiteTurn else 'b'):
+            #highlight sqaure
+            s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
+            s.set_alpha(100)
+            s.fill(game.Color('red'))
+            screen.blit(s, (c*SQUARE_SIZE, r*SQUARE_SIZE))
+
+            #highlight moves
+            s.fill(game.Color('yellow'))
+            for move in moves:
+                if move.startRow == r and move.startCol == c:
+                    screen.blit(s, (move.endCol*SQUARE_SIZE, move.endRow*SQUARE_SIZE))
+
+    
+
+def drawPieces(screen, gs):
+    for row in range(DIMENTION):
+        for col in range(DIMENTION):
             #pieces draw themselves
-            if board[row][col] != None:
-                board[row][col].draw(game, screen, SQUARE_SIZE)
+            if gs.board[row][col] != None:
+                gs.board[row][col].draw(game, screen, SQUARE_SIZE)
+
 
     
 
