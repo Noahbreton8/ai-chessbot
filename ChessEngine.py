@@ -6,43 +6,76 @@ from pieces.pawn import Pawn
 from pieces.queen import Queen
 import copy
 
+ranksToRows = {'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
+rowsToRanks = {v: k for k, v in ranksToRows.items()}
+
+filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+colsToFiles = {v: k for k, v in filesToCols.items()}
+
 class GameState():
-    def __init__(self, game):
-        self.whiteTurn = True
+    def __init__(self, game, fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8'):
         self.moveLog = []
-        self.wKingPos = (7, 4)
-        self.bKingPos = (0, 4)
         self.checkmate = False
         self.stalemate = False
         self.lastRemoved = None
-        #only 1 en passant is possible at a time, this stores coords
-        self.isEnPassantPossible = ()
-        self.currentCastleRights = CastleRights(True, True, True, True)
-        self.castleRightsLog = [CastleRights(True, True, True, True)]
-
 
         self.board = [[None for _ in range(8)] for _ in range(8)]
-        self.board[7][0] = Rook(game, 7, 0, 'wR')
-        self.board[7][7] = Rook(game, 7, 7, 'wR')
-        self.board[7][1] = Knight(game, 7, 1, 'wN')
-        self.board[7][6] = Knight(game, 7, 6, 'wN')
-        self.board[7][2] = Bishop(game, 7, 2, 'wB')
-        self.board[7][5] = Bishop(game, 7, 5, 'wB')
-        self.board[7][3] = Queen(game, 7, 3, 'wQ')
-        self.board[7][4] = King(game, 7, 4, 'wK')
 
-        self.board[0][0] = Rook(game, 0, 0, 'bR')
-        self.board[0][7] = Rook(game, 0, 7, 'bR')
-        self.board[0][1] = Knight(game, 0, 1, 'bN')
-        self.board[0][6] = Knight(game, 0, 6, 'bN')
-        self.board[0][2] = Bishop(game, 0, 2, 'bB')
-        self.board[0][5] = Bishop(game, 0, 5, 'bB')
-        self.board[0][3] = Queen(game, 0, 3, 'bQ')
-        self.board[0][4] = King(game, 0, 4, 'bK')
+        self.loadFenPosition(game, fen)
+        
+        self.castleRightsLog = [CastleRights(self.currentCastleRights.wks, self.currentCastleRights.bks, self.currentCastleRights.wqs, self.currentCastleRights.bqs)]
+    
+    def loadFenPosition(self, game, fen):
+        splitFen = fen.split(' ')
+        fenBoard, turn, castling, enpassant = splitFen[0], splitFen[1], splitFen[2], splitFen[3]
 
-        for i in range(8):
-            self.board[6][i] = Pawn(game, 6, i, 'wP')
-            self.board[1][i] = Pawn(game, 1, i, 'bP')
+        #setting up board
+        row, col = 0, 0
+        for character in fenBoard:
+            if character == '/':
+                row += 1
+                col = 0
+            elif character.isnumeric():
+                col += int(character)
+            else:
+                colour = 'w' if character.isupper() else 'b'
+                identity = character.upper()
+                if identity == 'K':
+                    self.board[row][col] = King(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.wKingPos = (row, col)
+                    else:
+                        self.bKingPos = (row, col)
+                elif identity == 'R':
+                    self.board[row][col] = Rook(game, row, col, colour+identity)
+                elif identity == 'N':
+                    self.board[row][col] = Knight(game, row, col, colour+identity)
+                elif identity == 'B':
+                    self.board[row][col] = Bishop(game, row, col, colour+identity)
+                elif identity == 'Q':
+                    self.board[row][col] = Queen(game, row, col, colour+identity)
+                elif identity == 'P':
+                    self.board[row][col] = Pawn(game, row, col, colour+identity)
+                col += 1
+
+        #setting up start
+        self.whiteTurn = True if turn == 'w' else False
+
+        #setting up starting castling rights
+        self.currentCastleRights = CastleRights(True if 'K' in castling else False, True if 'k' in castling else False, True if 'Q' in castling else False, True if 'q' in castling else False)
+
+        #setting up if en passant is possible
+        #only 1 en passant is possible at a time, this stores coords
+        self.isEnPassantPossible = ()
+        if enpassant != '-':
+            self.isEnPassantPossible = (ranksToRows[enpassant[1]], filesToCols(enpassant[0]))
+        
+        #FOR FUTURE USE
+        # self.halfMoves = int(halfmoves)
+        # self.fullMoves = int(fullmoves)-1
+
+
+
 
     def movePiece(self, move):
         self.board[move.startRow][move.startCol].moveTo(move.endRow, move.endCol, self.board)
