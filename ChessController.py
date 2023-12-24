@@ -80,13 +80,91 @@ def main():
             moveMade = False
         
         drawGameState(screen, gs, validMoves, currSelection)
+
+        if gs.checkmate or gs.stalemate:
+                result = drawEndScreen(screen, gs)
+                if result == "Quit":
+                    gameOn = False
+                elif result == "Play Again":
+                    gs = GameState(game)
+                    drawGameState(screen, gs)
+                    validMoves = gs.getAllValidMoves()
+                    moveMade = False
+                    currSelection = ()
+                    playerMoves = []
+
         game.display.flip()
+
     game.quit()
 
 def drawGameState(screen, gs, validMoves = [], sqSelected = ()):
     drawBoard(screen)
     highlightSqaures(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs)
+
+def drawEndScreen(screen, gs):
+    font = game.font.Font(None, 74)
+    message_font = game.font.Font(None, 36)
+    endScreenDisplayed = True
+
+    message = ""
+    if gs.checkmate:
+        message = "Checkmate!"
+    elif gs.stalemate:
+        message = "Stalemate!"
+
+    options = ["Quit", "Play Again"]
+    option_rects = []
+    
+    background_rect_padding = 30  # Adjusted padding
+    text = font.render(message, True, game.Color("black"))
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+
+    for i, option in enumerate(options):
+        option_text = message_font.render(option, True, game.Color("black"))
+        option_rect = option_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + i * 50))
+        option_rects.append((option, option_rect))
+
+    #Calc dimensions for rectangle
+    max_option_width = max(option_rect.width for _, option_rect in option_rects)
+    background_rect_width = max_option_width + 2 * background_rect_padding
+    background_rect_height = (text_rect.height + len(options) * 50 + 3 * background_rect_padding) // 2  # Reduced height
+    background_rect_x = (WIDTH - max_option_width) // 2 - background_rect_padding
+    background_rect_y = option_rects[0][1].top - background_rect_padding // 4 - 10# Adjusted vertical position
+
+    #Draw the backgroynd of buttons
+    background_rect = game.Rect(
+        background_rect_x, background_rect_y, background_rect_width, background_rect_height
+    )
+    game.draw.rect(screen, (200, 200, 200), background_rect)
+
+    while endScreenDisplayed:
+        for event in game.event.get():
+            if event.type == game.QUIT:
+                game.quit()
+                return "Quit"
+            elif event.type == game.MOUSEBUTTONDOWN:
+                x, y = game.mouse.get_pos()
+                for option, option_rect in option_rects:
+                    if option_rect.collidepoint(x, y):
+                        if option == "Quit":
+                            endScreenDisplayed = False  # Break the loop without quitting the game
+                            return "Quit"
+                        elif option == "Play Again":
+                            endScreenDisplayed = False
+                            return "Play Again"
+
+        for option, option_rect in option_rects:
+            screen.blit(
+                message_font.render(option, True, game.Color("black")), option_rect
+            )
+
+        screen.blit(text, text_rect)
+
+        game.display.flip()
+
+    #To keep screen up
+    return None
 
 def drawBoard(screen):
     colours = ((204, 183, 174), (112,102,119)) #((light colour), (dark colour)) feel free to change it
