@@ -11,9 +11,9 @@ rowsToRanks = {v: k for k, v in ranksToRows.items()}
 
 filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 colsToFiles = {v: k for k, v in filesToCols.items()}
-
+#starting fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 class GameState():
-    def __init__(self, game, fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8'):
+    def __init__(self, game, fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'):
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
@@ -23,6 +23,7 @@ class GameState():
 
         self.loadFenPosition(game, fen)
         
+        self.enPassanPossibleLog = [self.isEnPassantPossible]
         self.castleRightsLog = [CastleRights(self.currentCastleRights.wks, self.currentCastleRights.bks, self.currentCastleRights.wqs, self.currentCastleRights.bqs)]
     
     def loadFenPosition(self, game, fen):
@@ -68,7 +69,7 @@ class GameState():
         #only 1 en passant is possible at a time, this stores coords
         self.isEnPassantPossible = ()
         if enpassant != '-':
-            self.isEnPassantPossible = (ranksToRows[enpassant[1]], filesToCols(enpassant[0]))
+            self.isEnPassantPossible = (ranksToRows[enpassant[1]], filesToCols[enpassant[0]])
         
         #FOR FUTURE USE
         # self.halfMoves = int(halfmoves)
@@ -105,11 +106,14 @@ class GameState():
             self.board[move.startRow][move.endCol] = None
 
         #update enPassant var on 2 square advances
-        if ('wP' or 'bP' in move.movingPiece.identity) and abs(move.startRow - move.endRow) == 2: 
+        if ('wP' == move.movingPiece.identity or 'bP' == move.movingPiece.identity) and abs(move.startRow - move.endRow) == 2: 
             #first half calculates row , second is column
             self.isEnPassantPossible = ((move.startRow + move.endRow)//2, move.startCol)
         else:
             self.isEnPassantPossible = ()
+
+        #enpassant log
+        self.enPassanPossibleLog.append(self.isEnPassantPossible)
 
         #castle moves
         if move.isCastleMove:
@@ -156,14 +160,16 @@ class GameState():
                 #leave blank square blank
                 self.board[move.endRow][move.endCol] = None 
                 self.board[move.startRow][move.endCol] = move.capturedSquare
-                self.isEnPassantPossible = (move.endRow, move.endCol)
+                # self.isEnPassantPossible = (move.endRow, move.endCol) DONT NEED
 
-            #undo 2square advance (pawn)
-            if ('wP' or 'bP' in move.movingPiece.identity) and abs(move.startRow - move.endRow) == 2:
-                self.isEnPassantPossible = ()
+            self.enPassanPossibleLog.pop()
+            self.isEnPassantPossible = self.enPassanPossibleLog[-1]
+
+            #undo 2square advance (pawn) DONT NEED
+            # if ('wP' or 'bP' in move.movingPiece.identity) and abs(move.startRow - move.endRow) == 2:
+            #     self.isEnPassantPossible = ()
             
             #undoing castle rights
-
             self.castleRightsLog.pop()
             castleRights = copy.deepcopy(self.castleRightsLog[-1])
             self.currentCastleRights = castleRights
@@ -295,7 +301,7 @@ class GameState():
                 moves.append(Move((r, c), (r, c+2), self.board, isCastleMove=True))
     
     def getQueensideCastleMoves(self, r, c, moves):
-        if self.board[r][c-1] == None and self.board[r][c-2] == None:
+        if self.board[r][c-1] == None and self.board[r][c-2] == None and self.board[r][c-3] == None:
             if not self.squareUnderAttack(r, c-1) and not self.squareUnderAttack(r, c-2):
                 moves.append(Move((r, c), (r, c-2), self.board, isCastleMove=True))
     
