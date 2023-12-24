@@ -43,7 +43,7 @@ class Pawn(Piece):
                 if self.row == 1 and board[self.row+2][self.col] == None:
                     moves.append(Move((self.row, self.col), (self.row+2, self.col), board))
 
-            #Capturing right (from white side perspective)
+            #Capturing left (from white side perspective)
             if self.col > 0 and board[self.row+1][self.col-1] != None:
                 if board[self.row+1][self.col-1].colour =='w':
                     moves.append(Move((self.row, self.col), (self.row+1, self.col-1), board))
@@ -53,7 +53,7 @@ class Pawn(Piece):
                     if (self.row+1, self.col-1) == isEnPassantPossible:
                         moves.append(Move((self.row, self.col), (self.row+1, self.col-1), board, True))
 
-            #Capturing left (from white side perspective)
+            #Capturing right (from white side perspective)
             if  self.col < 7 and board[self.row+1][self.col+1] != None:
                 if board[self.row+1][self.col+1].colour =='w':
                     moves.append(Move((self.row, self.col), (self.row+1, self.col+1), board))

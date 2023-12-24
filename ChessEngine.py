@@ -146,10 +146,7 @@ class GameState():
             #is pawn promotion
             if move.isPawnPromotion:
                 #undo queen creation
-                if self.whiteTurn == True:
-                    Pawn(move.movingPiece.game, move.endRow, move.endCol, 'wP').moveTo(move.startRow, move.startCol, self.board)
-                else: 
-                    Pawn(move.movingPiece.game, move.endRow, move.endCol, 'bP').moveTo(move.startRow, move.startCol, self.board)
+                move.movingPiece.moveTo(move.startRow, move.startCol, self.board)
                     
                 if(self.lastRemoved is not None):
                     self.lastRemoved.moveTo(move.endRow, move.endCol, self.board)

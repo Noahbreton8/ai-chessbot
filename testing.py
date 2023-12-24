@@ -31,7 +31,7 @@ def main():
             break
         depth = int(input("Select a depth to go to, <=3 recommended: "))
         match num:
-            case 1: #Passes 1-4
+            case 1: #Passes 1-6, 3 depth takes about 1.5 seconds, 4 depth takes about 40 seconds, 5 depth takes about 12 minutes, 6 depth takes about 7.5 hours
                 fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
                 expected = [20, 400, 8902, 197281, 4865609, 119060324]
             case 2: #Passes 1-3
@@ -43,7 +43,7 @@ def main():
             case 4: #Passes 1 Fails 2 due to promotions
                 fen = 'r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1'
                 expected = [6, 264, 9467, 422333]
-            case 5: #Fails at 1 due to promotion
+            case 5: #Fails at 1 due to promotions
                 fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8'
                 expected = [44, 1486, 62379, 2103487]
             case 6: #Passes 1-3
