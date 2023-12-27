@@ -63,9 +63,16 @@ def main():
                                 if move == validMoves[i]:
                                     #do check for pawn promotion for selection, add var for choice
                                     moveMade = True
-                                    gs.movePiece(validMoves[i])
-                                currSelection = ()
-                                playerMoves = []
+
+                                    if validMoves[i].isPawnPromotion:
+                                        choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
+                                        while choice not in 'QRNB':
+                                            choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
+                                        gs.movePiece(Move(playerMoves[0], playerMoves[1], gs.board, promotion=choice))
+                                    else:
+                                        gs.movePiece(validMoves[i])
+                                    currSelection = ()
+                                    playerMoves = []
                             if not moveMade:
                                 currSelection = ()
                                 playerMoves = []
