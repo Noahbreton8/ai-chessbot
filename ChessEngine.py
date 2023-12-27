@@ -13,7 +13,7 @@ filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 colsToFiles = {v: k for k, v in filesToCols.items()}
 #starting fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 class GameState():
-    def __init__(self, game, fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'):
+    def __init__(self, game, fen = 'r3k2r/p1ppqpb1/bn1Ppnp1/4N3/4P3/1pN2Q1p/PPPBBPPP/R3K2R w KQkq -'):
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
@@ -261,6 +261,17 @@ class GameState():
             self.whiteTurn = not self.whiteTurn 
             if self.inCheck():
                 moves.remove(moves[i])
+            elif moves[i].isCastleMove:
+                #king side castle
+                if moves[i].endCol - moves[i].startCol == 2:
+                    if self.squareUnderAttack(moves[i].endRow, moves[i].endCol-1):
+                        moves.remove(moves[i])
+                #queen side castle
+                else:
+                    if self.squareUnderAttack(moves[i].endRow, moves[i].endCol+1):
+                        moves.remove(moves[i])
+
+            
             #reset turn 
             self.whiteTurn = not self.whiteTurn
             self.undoMove()
@@ -307,12 +318,12 @@ class GameState():
 
     def getKingsideCastleMoves(self, r, c, moves):
         if self.board[r][c+1] == None and self.board[r][c+2] == None:
-            if not self.squareUnderAttack(r, c+1) and not self.squareUnderAttack(r, c+2):
+            # if not self.squareUnderAttack(r, c+1) and not self.squareUnderAttack(r, c+2): moved into validate moves since it cannot check for pawn attacks
                 moves.append(Move((r, c), (r, c+2), self.board, isCastleMove=True))
     
     def getQueensideCastleMoves(self, r, c, moves):
         if self.board[r][c-1] == None and self.board[r][c-2] == None and self.board[r][c-3] == None:
-            if not self.squareUnderAttack(r, c-1) and not self.squareUnderAttack(r, c-2):
+            # if not self.squareUnderAttack(r, c-1) and not self.squareUnderAttack(r, c-2): moved into validate moves since it cannot check for pawn attacks
                 moves.append(Move((r, c), (r, c-2), self.board, isCastleMove=True))
     
 class Move():
