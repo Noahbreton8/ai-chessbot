@@ -17,8 +17,6 @@ class GameState():
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
-        self.lastRemoved = None
-
         self.board = [[None for _ in range(8)] for _ in range(8)]
 
         self.loadFenPosition(game, fen)
@@ -91,15 +89,27 @@ class GameState():
 
         #is pawn promotion
         if move.isPawnPromotion:
-            #save last killed piece
-            if move.capturedSquare is not None:
-                    self.lastRemoved = move.capturedSquare
-
-            if self.whiteTurn == True:
-                #create new queen
-                Queen(move.movingPiece.game, move.startRow, move.startCol, 'bQ').moveTo(move.endRow, move.endCol, self.board)
-            else: 
-                Queen(move.movingPiece.game, move.startRow, move.startCol, 'wQ').moveTo(move.endRow, move.endCol, self.board)
+            match move.promotionChoice:
+                case 'Q':
+                    if self.whiteTurn:
+                        Queen(move.movingPiece.game, move.startRow, move.startCol, 'bQ').moveTo(move.endRow, move.endCol, self.board)
+                    else: 
+                        Queen(move.movingPiece.game, move.startRow, move.startCol, 'wQ').moveTo(move.endRow, move.endCol, self.board)
+                case 'R':
+                    if self.whiteTurn:
+                        Rook(move.movingPiece.game, move.startRow, move.startCol, 'bR').moveTo(move.endRow, move.endCol, self.board)
+                    else: 
+                        Rook(move.movingPiece.game, move.startRow, move.startCol, 'wR').moveTo(move.endRow, move.endCol, self.board)
+                case 'N':
+                    if self.whiteTurn:
+                        Knight(move.movingPiece.game, move.startRow, move.startCol, 'bN').moveTo(move.endRow, move.endCol, self.board)
+                    else: 
+                        Knight(move.movingPiece.game, move.startRow, move.startCol, 'wN').moveTo(move.endRow, move.endCol, self.board)
+                case 'B':
+                    if self.whiteTurn:
+                        Bishop(move.movingPiece.game, move.startRow, move.startCol, 'bB').moveTo(move.endRow, move.endCol, self.board)
+                    else: 
+                        Bishop(move.movingPiece.game, move.startRow, move.startCol, 'wB').moveTo(move.endRow, move.endCol, self.board)
 
         #enpassant
         if move.isEnPassantMove:
@@ -146,11 +156,12 @@ class GameState():
             #is pawn promotion
             if move.isPawnPromotion:
                 #undo queen creation
+                removePromotionPiece = self.board[move.startRow][move.startCol]
+                del removePromotionPiece
                 move.movingPiece.moveTo(move.startRow, move.startCol, self.board)
                     
-                if(self.lastRemoved is not None):
-                    self.lastRemoved.moveTo(move.endRow, move.endCol, self.board)
-                    self.lastRemoved = None
+                if(move.capturedSquare is not None):
+                    move.capturedSquare.moveTo(move.endRow, move.endCol, self.board)
 
             #undo enPassant        
             if move.isEnPassantMove:
@@ -203,15 +214,17 @@ class GameState():
                     self.currentCastleRights.bks = False
         elif isinstance(move.capturedSquare, Rook):
             if move.capturedSquare.identity == 'wR':
-                if move.capturedSquare.col == 7:
-                    self.currentCastleRights.wks = False
-                elif move.capturedSquare.col == 0:
-                    self.currentCastleRights.wqs = False
+                if move.capturedSquare.row == 7:
+                    if move.capturedSquare.col == 7:
+                        self.currentCastleRights.wks = False
+                    elif move.capturedSquare.col == 0:
+                        self.currentCastleRights.wqs = False
             else:
-                if move.capturedSquare.col == 7:
-                    self.currentCastleRights.bks = False
-                elif move.capturedSquare.col == 0:
-                    self.currentCastleRights.bqs = False
+                if move.capturedSquare.row == 0:
+                    if move.capturedSquare.col == 7:
+                        self.currentCastleRights.bks = False
+                    elif move.capturedSquare.col == 0:
+                        self.currentCastleRights.bqs = False
 
     def getAllPossibleMoves(self):
         moves = []
@@ -309,16 +322,16 @@ class Move():
     filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
     colsToFiles = {v: k for k, v in filesToCols.items()}
 
-    def __init__(self, start, end, board, isEnPassantMove = False, isCastleMove = False):
+    def __init__(self, start, end, board, isEnPassantMove = False, isCastleMove = False, promotion = None):
         self.startRow = start[0]
         self.startCol = start[1]
         self.endRow = end[0]
         self.endCol = end[1]
         self.movingPiece = board[self.startRow][self.startCol]
         self.capturedSquare = board[self.endRow][self.endCol]
-        self.moveId = self.getChessNotation()
-
-        self.isPawnPromotion = ((self.movingPiece.identity == 'wP' and self.endRow == 0) or (self.movingPiece.identity == 'bP' and self.endRow == 7))
+        
+        self.isPawnPromotion = True if promotion != None else False
+        self.promotionChoice = promotion
         
         self.isEnPassantMove = isEnPassantMove
 
@@ -330,6 +343,8 @@ class Move():
 
         self.isCastleMove = isCastleMove
 
+        self.moveId = self.getChessNotation()
+
     def __eq__(self, other):
         if not isinstance(other, Move):
             return False
@@ -337,7 +352,10 @@ class Move():
         return self.moveId == other.moveId
 
     def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+        if self.isPawnPromotion:
+            return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol) + self.promotionChoice.lower()
+        else:
+            return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 
     def getAlgebraicNotation(self):
     #always return self.movingPiece.identity's endingSquare unless 
