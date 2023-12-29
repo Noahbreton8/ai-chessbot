@@ -142,7 +142,6 @@ def makeBestMoveRandom(gs, validMoves):
 def findBestMove(gs, validMoves):
     global nextMove, counter
     nextMove = None
-    random.shuffle(validMoves)
     counter = 0
     startTime = time.time()
     findMoveNegaMaxAB(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteTurn else -1)
