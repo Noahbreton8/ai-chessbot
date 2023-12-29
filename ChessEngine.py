@@ -13,7 +13,7 @@ filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 colsToFiles = {v: k for k, v in filesToCols.items()}
 #starting fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 class GameState():
-    def __init__(self, game, fen = 'r3k2r/p1ppqpb1/bn1Ppnp1/4N3/4P3/1pN2Q1p/PPPBBPPP/R3K2R w KQkq -'):
+    def __init__(self, game, fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'):
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
@@ -72,8 +72,6 @@ class GameState():
         #FOR FUTURE USE
         # self.halfMoves = int(halfmoves)
         # self.fullMoves = int(fullmoves)-1
-
-
 
 
     def movePiece(self, move):
@@ -191,6 +189,9 @@ class GameState():
                 #queen side castle
                 else:
                     self.board[move.endRow][move.endCol+1].moveTo(move.endRow, move.endCol-2, self.board)
+
+        self.checkmate = False
+        self.stalemate = False
 
 
     def updateCastleRights(self, move):
