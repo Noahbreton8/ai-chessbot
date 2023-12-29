@@ -15,8 +15,8 @@ def moveGenerationTest(depth, gs):
     for move in moves:
         gs.movePiece(move)
         added = moveGenerationTest(depth-1, gs)
-        if depth == 2:
-            print(f"{move.getChessNotation()}: {added}")
+        # if depth == 2:
+        #     print(f"{move.getChessNotation()}: {added}")
         numPosition = numPosition + added
         gs.undoMove()
 
@@ -45,17 +45,14 @@ def main():
             case 4: #Passes 1-4
                 fen = 'r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1'
                 expected = [6, 264, 9467, 422333]
-            case 5: #Passes 1-3
+            case 5: #Passes 1-4
                 fen = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8'
                 expected = [44, 1486, 62379, 2103487]
             case 6: #Passes 1-3
                 fen = 'r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 '
                 expected = [46, 2079, 89890, 3894594]
-            case 7: #Passes 1-3
-                fen = 'r3k2r/p1ppqpb1/bn1Ppnp1/4N3/4P3/1pN2Q1p/PPPBBPPP/R3K2R w KQkq -'
-                expected = [0, 2019]
 
-        for i in range(depth-1, depth):
+        for i in range(depth):
             gs = GameState(game, fen)
             startTime = time.time()
             totalPositions = moveGenerationTest(i+1, gs)

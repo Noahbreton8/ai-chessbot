@@ -73,6 +73,8 @@ def main():
                                         gs.movePiece(validMoves[i])
                                     currSelection = ()
                                     playerMoves = []
+                                    break
+                                
                             if not moveMade:
                                 currSelection = ()
                                 playerMoves = []
