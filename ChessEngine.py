@@ -363,10 +363,11 @@ class Move():
         return self.moveId == other.moveId
 
     def getChessNotation(self):
-        if self.isPawnPromotion:
-            return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol) + self.promotionChoice.lower()
-        else:
-            return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+        #Uncomment for testing
+        # if self.isPawnPromotion:
+        #     return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol) + self.promotionChoice.lower()
+        # else:
+        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
 
     def getAlgebraicNotation(self):
     #always return self.movingPiece.identity's endingSquare unless 
