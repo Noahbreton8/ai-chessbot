@@ -3,7 +3,7 @@ import random, time
 CHECKMATE = 100000
 STALEMATE = 0
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "P": 100}
-DEPTH = 3
+DEPTH = 2
 
 kingMiddleGameScoresW = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -141,7 +141,8 @@ def findBestMove(gs, validMoves):
     nextMove = None
     counter = 0
     startTime = time.time()
-    findMoveNegaMaxAB(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteTurn else -1)
+    #findMoveNegaMaxAB(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteTurn else -1)
+    findMoveNegaMaxABv2(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, True if gs.whiteTurn else False)
     endtime = time.time()
     print(counter)
     print(endtime - startTime)
@@ -169,7 +170,7 @@ def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
     for move in validMoves:
         gs.movePiece(move)
         nextMoves = gs.getAllValidMoves()
-        score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, -beta, -alpha, -turnMultiplier)
+        score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, beta, alpha, -turnMultiplier)
         if score > maxScore:
             maxScore = score
             if depth == DEPTH:
@@ -185,6 +186,54 @@ def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
 
     return maxScore
 
+
+def findMoveNegaMaxABv2(gs, validMoves, depth, alpha, beta, maximize):
+    global nextMove
+    if depth == 0 or gs.checkmate or gs.stalemate:
+        if depth == 0:
+            return scoreBoard(gs)
+        elif gs.checkmate:
+            if gs.whiteTurn:
+                return -CHECKMATE 
+            else:
+                return CHECKMATE
+        
+        elif gs.stalemate:
+            return STALEMATE
+        
+    if maximize:
+        maxScore = -CHECKMATE
+        for move in validMoves:
+            gs.movePiece(move)
+            moves = gs.getAllValidMoves()
+            score = findMoveNegaMaxABv2(gs, moves, depth-1, alpha, beta, False)
+            if score > maxScore:
+                maxScore = score
+                if depth == DEPTH:
+                    nextMove = move
+                    print(move.moveId, maxScore)
+            gs.undoMove()
+            if score > beta:
+                break
+            alpha = max(alpha, maxScore)
+        return maxScore
+    else:
+        maxScore = CHECKMATE
+        
+        for move in validMoves:
+            gs.movePiece(move)
+            moves = gs.getAllValidMoves()
+            score = findMoveNegaMaxABv2(gs, moves, depth-1, alpha, beta, True)
+            if score < maxScore:
+                maxScore = score
+                if depth == DEPTH:
+                    nextMove = move
+                    print(move.moveId, maxScore)
+            gs.undoMove()
+            if score < alpha:
+                break
+            beta = min(beta, maxScore)
+        return maxScore
 
 def scoreBoard(gs):
     if gs.checkmate:
@@ -208,9 +257,6 @@ def scoreBoard(gs):
                     score -= pieceScore[square.identity[1]] + piecePositionScoreB[square.identity[1]][row][col]
 
     return score
-
-
-
 
 
 def makeBestMinMaxMove(gs, validMoves, depth, whiteTurn):

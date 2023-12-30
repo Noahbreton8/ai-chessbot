@@ -29,8 +29,8 @@ def main():
     currSelection = () #keeps track of current choice
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
-    player1 = True #True if a human player, false if the AI plays
-    player2 = True #Same as player 1
+    player1 = False #True if a human player, false if the AI plays
+    player2 = False #Same as player 1
 
     gameOn = True
     while gameOn:
