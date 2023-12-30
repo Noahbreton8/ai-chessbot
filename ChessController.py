@@ -30,7 +30,7 @@ def main():
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
     player1 = True #True if a human player, false if the AI plays
-    player2 = False #Same as player 1
+    player2 = True #Same as player 1
 
     gameOn = True
     while gameOn:
@@ -79,9 +79,10 @@ def main():
 
                                         #If its a pawn promotion ask the user what they want to promote to
                                         if validMoves[i].isPawnPromotion:
-                                            choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
-                                            while choice not in 'QRNB':
-                                                choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
+                                            # choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
+                                            # while choice not in 'QRNB':
+                                            #     choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
+                                            choice = drawPieceSelection(screen)
                                             gs.movePiece(Move(playerMoves[0], playerMoves[1], gs.board, promotion=choice))
                                         else:
                                             gs.movePiece(validMoves[i])
@@ -245,7 +246,68 @@ def drawEndScreen(screen, gs):
 
     #To keep screen up
     return None
-    
+
+def drawButton(surface, text, position, size):
+    font = game.font.Font(None, 36)
+    button_text = font.render(text, True, game.Color("black"))
+    button_rect = button_text.get_rect(center=(position[0] + size[0] // 2, position[1] + size[1] // 2))
+    game.draw.rect(surface, (200, 200, 200), button_rect)
+    surface.blit(button_text, button_rect)
+
+def drawPieceSelection(screen):
+    # Define even smaller overlay size and padding
+    overlay_width = WIDTH // 6
+    overlay_height = HEIGHT // 6
+    overlay_padding = 5
+
+     # Create an even smaller overlay surface
+    overlay_surface = game.Surface((overlay_width, overlay_height), game.SRCALPHA)  # Use SRCALPHA for transparency
+
+    # Draw brown border around the overlay
+    border_rect = game.Rect((0, 0, overlay_width, overlay_height))
+    game.draw.rect(overlay_surface, (139, 69, 19), border_rect, border_radius=5)
+
+    # Draw white background inside the border
+    background_rect = game.Rect((overlay_padding, overlay_padding, overlay_width - 2 * overlay_padding, overlay_height - 2 * overlay_padding))
+    game.draw.rect(overlay_surface, (255, 255, 255), background_rect)
+
+    # Draw images in a 2x2 grid on the even smaller overlay
+    image_size = (overlay_width // 2 - overlay_padding * 2, overlay_height // 2 - overlay_padding * 2)
+    image_positions = [
+        (overlay_padding, overlay_padding),
+        (overlay_width // 2 + overlay_padding, overlay_padding),
+        (overlay_padding, overlay_height // 2 + overlay_padding),
+        (overlay_width // 2 + overlay_padding, overlay_height // 2 + overlay_padding),
+    ]
+
+    image_names = ['wQ.png', 'wN.png', 'wR.png', 'wB.png']
+
+    for name, position in zip(image_names, image_positions):
+        drawImage(overlay_surface, name, position, image_size)
+
+    overlay_x = (WIDTH - overlay_width) // 2
+    overlay_y = (HEIGHT - overlay_height) // 2
+
+    screen.blit(overlay_surface, (overlay_x, overlay_y))
+    game.display.flip()
+
+    while True:
+        for event in game.event.get():
+            if event.type == game.QUIT:
+                game.quit()
+                return None
+            elif event.type == game.MOUSEBUTTONDOWN:
+                x, y = game.mouse.get_pos()
+                for i, position in enumerate(image_positions):
+                    image_rect = game.Rect((position[0] + overlay_x, position[1] + overlay_y), image_size)
+                    if image_rect.collidepoint(x, y):
+                        return image_names[i][1]
+
+def drawImage(surface, name, position, size):
+    image = game.image.load(f'images/{name}')
+    image = game.transform.scale(image, size)
+    rect = image.get_rect(topleft=position)
+    surface.blit(image, rect)
 
 main()
 
