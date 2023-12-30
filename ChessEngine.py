@@ -346,7 +346,6 @@ class Move():
         self.promotionChoice = promotion
         
         self.isEnPassantMove = isEnPassantMove
-
         if self.isEnPassantMove:
             if self.movingPiece.identity == 'bP':
                 self.capturedSquare = Pawn(self.movingPiece.game, self.endRow-1, self.endCol, 'wP')

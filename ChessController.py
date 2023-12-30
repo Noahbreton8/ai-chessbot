@@ -8,34 +8,41 @@ SIZE = WIDTH, HEIGHT
 DIMENTION = 8
 SQUARE_SIZE = WIDTH/DIMENTION
 
+'''
+Handles what needs to happen during the game
+'''
 def main():
     game.init()
     screen = game.display.set_mode(SIZE)
     screen.fill((255, 255, 255))
 
+    #Initialize game
     gs = GameState(game)
+    
+    #Draw initial screen
+    drawGameState(screen, gs) 
 
-    drawGameState(screen, gs)
-
+    #Starting moves
     validMoves = gs.getAllValidMoves()
     moveMade = False #until valid move is made don't regenerate validMoves
 
     currSelection = () #keeps track of current choice
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
-    player1 = True 
-    player2 = False
+    player1 = True #True if a human player, false if the AI plays
+    player2 = False #Same as player 1
 
     gameOn = True
     while gameOn:
         humanTurn = (gs.whiteTurn and player1) or (not gs.whiteTurn and player2)
         for event in game.event.get():
+
+            #Exit button is clicked
             if event.type == game.QUIT:
                 gameOn = False
             
             #Selecting squares
             elif event.type == game.MOUSEBUTTONDOWN:
-
                 if (not gs.checkmate and not gs.stalemate) and humanTurn:
                     x,y = game.mouse.get_pos()
 
@@ -59,7 +66,7 @@ def main():
                         #check if more than one click has been made
                         if len(playerMoves) == 2:
                             #check if second choice colour is same as first choice colour
-                            if gs.board[playerMoves[1][0]][int(playerMoves[1][1])] and gs.board[playerMoves[0][0]][playerMoves[0][1]].colour == gs.board[playerMoves[1][0]][playerMoves[1][1]].colour:
+                            if gs.board[playerMoves[1][0]][playerMoves[1][1]] and gs.board[playerMoves[0][0]][playerMoves[0][1]].colour == gs.board[playerMoves[1][0]][playerMoves[1][1]].colour:
                                 playerMoves = playerMoves[1:] #remove the first move 
 
                             # second click is an opponent's piece or a empty square
@@ -68,9 +75,9 @@ def main():
                                 print(move.getAlgebraicNotation())
                                 for i in range(len(validMoves)):
                                     if move == validMoves[i]:
-                                        #do check for pawn promotion for selection, add var for choice
                                         moveMade = True
 
+                                        #If its a pawn promotion ask the user what they want to promote to
                                         if validMoves[i].isPawnPromotion:
                                             choice = input("Enter a promotion choice: \n \tFor Queen enter 'q'\n\tFor Rook enter 'r' \n\tFor Knight enter 'n' \n\tFor Bishop enter 'b'\n").upper()
                                             while choice not in 'QRNB':
@@ -78,34 +85,36 @@ def main():
                                             gs.movePiece(Move(playerMoves[0], playerMoves[1], gs.board, promotion=choice))
                                         else:
                                             gs.movePiece(validMoves[i])
+
+                                        #reset selections
                                         currSelection = ()
                                         playerMoves = []
                                         break
-                                if not moveMade:
-                                    currSelection = ()
-                                    playerMoves = []
-                                    break
                                 
                             if not moveMade:
                                 currSelection = ()
                                 playerMoves = []
             
+            #Undoing move
             elif event.type == game.KEYDOWN:
                 if event.key == game.K_u:
                     gs.undoMove()
                     moveMade = True
         
+        #AI move generation
         if (not gs.checkmate and not gs.stalemate) and not humanTurn:
             move = AiMoveGenerator.findBestMove(gs, validMoves)
             gs.movePiece(move)
             moveMade = True
-            
+        
+        #If a move has been made regenerate valid moves
         if moveMade:
             validMoves = gs.getAllValidMoves()
             moveMade = False
         
         drawGameState(screen, gs, validMoves, currSelection)
 
+        #End screen
         if gs.checkmate or gs.stalemate:
                 result = drawEndScreen(screen, gs)
                 if result == "Quit":
@@ -122,11 +131,57 @@ def main():
 
     game.quit()
 
+'''
+handles drawing everything on the screen
+'''
 def drawGameState(screen, gs, validMoves = [], sqSelected = ()):
     drawBoard(screen)
     highlightSqaures(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs)
 
+'''
+Draws the squares only
+'''
+def drawBoard(screen):
+    colours = ((204, 183, 174), (112,102,119)) #((light colour), (dark colour)) feel free to change it
+    for row in range(DIMENTION):
+        for col in range(DIMENTION):
+            #Drawing background colour
+            colour = colours[(col+row) %2]
+            game.draw.rect(screen, colour, game.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+'''
+When a piece is selected, this draws what moves it can make and the piece selected
+'''
+def highlightSqaures(screen, gs, moves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c] != None and gs.board[r][c].colour == ('w' if gs.whiteTurn else 'b'):
+            #highlight sqaure
+            s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
+            s.set_alpha(100)
+            s.fill(game.Color('red'))
+            screen.blit(s, (c*SQUARE_SIZE, r*SQUARE_SIZE))
+
+            #highlight moves
+            s.fill(game.Color('yellow'))
+            for move in moves:
+                if move.startRow == r and move.startCol == c:
+                    screen.blit(s, (move.endCol*SQUARE_SIZE, move.endRow*SQUARE_SIZE))
+
+'''
+Draw just the piece image
+'''
+def drawPieces(screen, gs):
+    for row in range(DIMENTION):
+        for col in range(DIMENTION):
+            #pieces draw themselves
+            if gs.board[row][col] != None:
+                gs.board[row][col].draw(game, screen, SQUARE_SIZE)
+
+'''
+Drawing the endgame screen whether it's a checkmate or stalemate
+'''
 def drawEndScreen(screen, gs):
     font = game.font.Font(None, 74)
     message_font = game.font.Font(None, 36)
@@ -190,42 +245,6 @@ def drawEndScreen(screen, gs):
 
     #To keep screen up
     return None
-
-def drawBoard(screen):
-    colours = ((204, 183, 174), (112,102,119)) #((light colour), (dark colour)) feel free to change it
-    for row in range(DIMENTION):
-        for col in range(DIMENTION):
-            #Drawing background colour
-            colour = colours[(col+row) %2]
-            game.draw.rect(screen, colour, game.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
-
-def highlightSqaures(screen, gs, moves, sqSelected):
-    if sqSelected != ():
-        r, c = sqSelected
-        if gs.board[r][c] != None and gs.board[r][c].colour == ('w' if gs.whiteTurn else 'b'):
-            #highlight sqaure
-            s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
-            s.set_alpha(100)
-            s.fill(game.Color('red'))
-            screen.blit(s, (c*SQUARE_SIZE, r*SQUARE_SIZE))
-
-            #highlight moves
-            s.fill(game.Color('yellow'))
-            for move in moves:
-                if move.startRow == r and move.startCol == c:
-                    screen.blit(s, (move.endCol*SQUARE_SIZE, move.endRow*SQUARE_SIZE))
-
-    
-
-def drawPieces(screen, gs):
-    for row in range(DIMENTION):
-        for col in range(DIMENTION):
-            #pieces draw themselves
-            if gs.board[row][col] != None:
-                gs.board[row][col].draw(game, screen, SQUARE_SIZE)
-
-
     
 
 main()

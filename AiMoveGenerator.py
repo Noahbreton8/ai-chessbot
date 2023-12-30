@@ -1,9 +1,9 @@
 import random, time 
 
-CHECKMATE = 1000
+CHECKMATE = 100000
 STALEMATE = 0
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "P": 100}
-DEPTH = 3
+DEPTH = 2
 
 kingMiddleGameScoresW = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -136,9 +136,6 @@ queenScoresB =  [[-20, -10, -10, -5, -5, -10, -10, -20],
 piecePositionScoreW = {"K": kingMiddleGameScoresW, "Q": queenScoresW, "R": rookScoresW, "B": bishopScoresW, "N": knightScoresW, "P": pawnScoresW}
 piecePositionScoreB = {"K": kingMiddleGameScoresB, "Q": queenScoresB, "R": rookScoresB, "B": bishopScoresB, "N": knightScoresB, "P": pawnScoresB}
 
-def makeBestMoveRandom(gs, validMoves):
-    return validMoves[random.randint(0, len(validMoves)-1)]
-
 def findBestMove(gs, validMoves):
     global nextMove, counter
     nextMove = None
@@ -148,8 +145,74 @@ def findBestMove(gs, validMoves):
     endtime = time.time()
     print(counter)
     print(endtime - startTime)
-    # makeBestMinMaxMove(gs, validMoves, DEPTH, gs.whiteTurn)
+    makeBestMinMaxMove(gs, validMoves, DEPTH, gs.whiteTurn)
     return nextMove
+
+
+def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
+    global nextMove, counter
+    counter +=1
+    if depth == 0:
+        return turnMultiplier * scoreBoard(gs)
+
+    #add move ordering -check captures
+    maxScore = -CHECKMATE-1
+    if len(validMoves) == 0:
+        if gs.checkmate:
+            if gs.whiteTurn:
+                maxScore = -CHECKMATE 
+            else:
+                maxScore = CHECKMATE
+            
+        elif gs.stalemate:
+            maxScore = STALEMATE
+
+    for move in validMoves:
+        gs.movePiece(move)
+        nextMoves = gs.getAllValidMoves()
+        score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, -beta, -alpha, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+                print(move.moveId, maxScore)
+        gs.undoMove()
+        #prune
+        if maxScore > alpha:
+            alpha = maxScore
+
+        if alpha >= beta:
+            break
+
+    return maxScore
+
+
+def scoreBoard(gs):
+    if gs.checkmate:
+        if gs.whiteTurn:
+            return -CHECKMATE 
+        else:
+            return CHECKMATE
+        
+    elif gs.stalemate:
+        return STALEMATE
+
+    score = 0
+    for row in range(8):
+        for col in range(8):
+            square = gs.board[row][col]
+            if square != None:
+                if square.colour == 'w':
+                    score += pieceScore[square.identity[1]] + piecePositionScoreW[square.identity[1]][row][col]
+
+                elif square.colour == 'b':
+                    score -= pieceScore[square.identity[1]] + piecePositionScoreB[square.identity[1]][row][col]
+
+    return score
+
+
+
+
 
 def makeBestMinMaxMove(gs, validMoves, depth, whiteTurn):
     global nextMove 
@@ -200,54 +263,5 @@ def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
         gs.undoMove()
     return maxScore
 
-
-
-def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
-    global nextMove, counter
-    counter +=1
-    if depth == 0:
-        return turnMultiplier * scoreBoard(gs)
-
-    #add move ordering -check captures
-    maxScore = -CHECKMATE
-    for move in validMoves:
-        gs.movePiece(move)
-        nextMoves = gs.getAllValidMoves()
-        score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, -beta, -alpha, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
-            if depth == DEPTH:
-                nextMove = move
-        gs.undoMove()
-        #prune
-        if maxScore > alpha:
-            alpha = maxScore
-
-        if alpha >= beta:
-            break
-
-    return maxScore
-
-
-def scoreBoard(gs):
-    if gs.checkmate:
-        if gs.whiteTurn:
-            return -CHECKMATE 
-        else:
-            return CHECKMATE
-        
-    elif gs.stalemate:
-         return STALEMATE
-
-    score = 0
-    for row in range(8):
-        for col in range(8):
-            square = gs.board[row][col]
-            if square != None:
-                if square.colour == 'w':
-                    score += pieceScore[square.identity[1]] + piecePositionScoreW[square.identity[1]][row][col]
-
-                elif square.colour == 'b':
-                    score -= pieceScore[square.identity[1]] + piecePositionScoreB[square.identity[1]][row][col]
-
-    return score
+def makeBestMoveRandom(gs, validMoves):
+    return validMoves[random.randint(0, len(validMoves)-1)]

@@ -3,7 +3,6 @@ from .piece import Piece
 class King(Piece):
     def __init__(self, *args):
         self.directions = [(-1,0), (1,0), (0, -1), (0, 1), (-1,-1), (1, 1), (-1, 1), (1, -1)]
-        self.hasMoved = False
         super().__init__(*args)
 
     def getMoves(self, moves, board):
