@@ -3,7 +3,7 @@ import random, time
 CHECKMATE = 100000
 STALEMATE = 0
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "P": 100}
-DEPTH = 2
+DEPTH = 3
 
 kingMiddleGameScoresW = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -145,7 +145,6 @@ def findBestMove(gs, validMoves):
     endtime = time.time()
     print(counter)
     print(endtime - startTime)
-    makeBestMinMaxMove(gs, validMoves, DEPTH, gs.whiteTurn)
     return nextMove
 
 
