@@ -13,7 +13,7 @@ filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 colsToFiles = {v: k for k, v in filesToCols.items()}
 #starting fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 class GameState():
-    def __init__(self, game, fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'):
+    def __init__(self, game, fen = '8/2p5/8/KP1P3r/R4p1k/8/4P1P1/8 w - -'):
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
@@ -323,8 +323,12 @@ class GameState():
                             break
                 for i in range (len(moves) -1, -1, -1):
                     if moves[i].movingPiece.identity[1] != 'K':
-                        if not (moves[i].endRow, moves[i].endCol) in valideSquares:
-                            moves.remove(moves[i])
+                        if moves[i].isEnPassantMove:
+                            if not (moves[i].endRow+1, moves[i].endCol) in valideSquares:
+                                moves.remove(moves[i])
+                        else:
+                            if not (moves[i].endRow, moves[i].endCol) in valideSquares:
+                                moves.remove(moves[i])
             else:
                 piece = self.board[kingRow][kingCol]
                 if isinstance(piece, Pawn):
