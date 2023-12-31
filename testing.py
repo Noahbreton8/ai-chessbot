@@ -8,7 +8,7 @@ def moveGenerationTest(depth, gs):
 
     numPosition = 0
     
-    moves = gs.getAllValidMoves()
+    moves = gs.getValidMoves()
 
     #for index, move in enumerate(moves):
         #print(f"{depth}:  {index}")

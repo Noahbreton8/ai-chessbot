@@ -3,7 +3,7 @@ import random, time
 CHECKMATE = 100000
 STALEMATE = 0
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "P": 100}
-DEPTH = 2
+DEPTH = 3
 
 kingMiddleGameScoresW = [[-30,-40,-40,-50,-50,-40,-40,-30],
                         [-30,-40,-40,-50,-50,-40,-40,-30],
@@ -169,7 +169,7 @@ def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
 
     for move in validMoves:
         gs.movePiece(move)
-        nextMoves = gs.getAllValidMoves()
+        nextMoves = gs.getValidMoves()
         score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, beta, alpha, -turnMultiplier)
         if score > maxScore:
             maxScore = score
@@ -189,7 +189,7 @@ def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
 
 def findMoveNegaMaxABv2(gs, validMoves, depth, alpha, beta, maximize):
     global nextMove
-    if depth == 0 or gs.checkmate or gs.stalemate:
+    if depth == 0 or gs.checkmate or gs.stalemate or len(validMoves) == 0:
         if depth == 0:
             return scoreBoard(gs)
         elif gs.checkmate:
@@ -202,10 +202,10 @@ def findMoveNegaMaxABv2(gs, validMoves, depth, alpha, beta, maximize):
             return STALEMATE
         
     if maximize:
-        maxScore = -CHECKMATE
+        maxScore = -CHECKMATE-1
         for move in validMoves:
             gs.movePiece(move)
-            moves = gs.getAllValidMoves()
+            moves = gs.getValidMoves()
             score = findMoveNegaMaxABv2(gs, moves, depth-1, alpha, beta, False)
             if score > maxScore:
                 maxScore = score
@@ -218,11 +218,11 @@ def findMoveNegaMaxABv2(gs, validMoves, depth, alpha, beta, maximize):
             alpha = max(alpha, maxScore)
         return maxScore
     else:
-        maxScore = CHECKMATE
+        maxScore = CHECKMATE+1
         
         for move in validMoves:
             gs.movePiece(move)
-            moves = gs.getAllValidMoves()
+            moves = gs.getValidMoves()
             score = findMoveNegaMaxABv2(gs, moves, depth-1, alpha, beta, True)
             if score < maxScore:
                 maxScore = score
@@ -268,7 +268,7 @@ def makeBestMinMaxMove(gs, validMoves, depth, whiteTurn):
         maxScore = -CHECKMATE
         for move in validMoves:
             gs.movePiece(move)
-            nextMoves = gs.getAllValidMoves()
+            nextMoves = gs.getValidMoves()
             score = makeBestMinMaxMove(gs, nextMoves, depth -1, False)
             if score > maxScore:
                 maxScore = score
@@ -281,7 +281,7 @@ def makeBestMinMaxMove(gs, validMoves, depth, whiteTurn):
         minScore = CHECKMATE
         for move in validMoves:
             gs.movePiece(move)
-            nextMoves = gs.getAllValidMoves()
+            nextMoves = gs.getValidMoves()
             score = makeBestMinMaxMove(gs, nextMoves, depth -1, True)
             if score < minScore:
                 minScore = score
@@ -299,7 +299,7 @@ def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
     maxScore = -CHECKMATE
     for move in validMoves:
         gs.movePiece(move)
-        nextMoves = gs.getAllValidMoves()
+        nextMoves = gs.getValidMoves()
         score = -findMoveNegaMax(gs, nextMoves, depth -1, -turnMultiplier)
         if score > maxScore:
             maxScore = score

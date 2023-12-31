@@ -23,13 +23,13 @@ def main():
     drawGameState(screen, gs) 
 
     #Starting moves
-    validMoves = gs.getAllValidMoves()
+    validMoves = gs.getValidMoves()
     moveMade = False #until valid move is made don't regenerate validMoves
 
     currSelection = () #keeps track of current choice
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
-    player1 = False #True if a human player, false if the AI plays
+    player1 = True #True if a human player, false if the AI plays
     player2 = False #Same as player 1
 
     gameOn = True
@@ -110,7 +110,7 @@ def main():
         
         #If a move has been made regenerate valid moves
         if moveMade:
-            validMoves = gs.getAllValidMoves()
+            validMoves = gs.getValidMoves()
             moveMade = False
         
         drawGameState(screen, gs, validMoves, currSelection)
@@ -123,7 +123,7 @@ def main():
                 elif result == "Play Again":
                     gs = GameState(game)
                     drawGameState(screen, gs)
-                    validMoves = gs.getAllValidMoves()
+                    validMoves = gs.getValidMoves()
                     moveMade = False
                     currSelection = ()
                     playerMoves = []
