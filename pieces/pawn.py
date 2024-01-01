@@ -57,12 +57,9 @@ class Pawn(Piece):
                             self.handlePromotionMoves(moves, board, self.row, self.col, self.row-1, self.col-1)
                         else:
                             moves.append(Move((self.row, self.col), (self.row-1, self.col-1), board))
-                #capturing blank square (enPassant)
+            #capturing blank square (enPassant)
             elif self.col > 0 and board[self.row][self.col-1] != None:
-
-                #FIX LATER
-
-                if board[self.row][self.col-1].colour =='b':
+                if not piecePinned and board[self.row][self.col-1].colour =='b':
                     if (self.row-1, self.col-1) == isEnPassantPossible:
                         attackingPiece = blockingPiece = False
                         if kingRow == self.row:
@@ -80,6 +77,7 @@ class Pawn(Piece):
                                 square = board[self.row][i]
                                 if square != None and square.colour == enemyColour and (square.identity[1] == 'R' or square.identity[1] =='Q'):
                                     attackingPiece =True
+                                    break
                                 elif square != None:
                                     blockingPiece = True
 
@@ -96,7 +94,7 @@ class Pawn(Piece):
                             moves.append(Move((self.row, self.col), (self.row-1, self.col+1), board))
                 #capturing blank square (enPassant)
             elif self.col < 7 and board[self.row][self.col+1] != None:
-                if board[self.row][self.col+1].colour =='b':
+                if not piecePinned and board[self.row][self.col+1].colour =='b':
                     if (self.row-1, self.col+1) == isEnPassantPossible:
                         attackingPiece = blockingPiece = False
                         if kingRow == self.row:
@@ -114,6 +112,7 @@ class Pawn(Piece):
                                 square = board[self.row][i]
                                 if square != None and square.colour == enemyColour and (square.identity[1] == 'R' or square.identity[1] =='Q'):
                                     attackingPiece =True
+                                    break
                                 elif square != None:
                                     blockingPiece = True
 
@@ -145,8 +144,7 @@ class Pawn(Piece):
                             moves.append(Move((self.row, self.col), (self.row+1, self.col-1), board))
                     #capturing blank square (enPassant)
             elif self.col > 0 and board[self.row][self.col-1] != None:
-                #FIX
-                if board[self.row][self.col-1].colour =='w':
+                if not piecePinned and board[self.row][self.col-1].colour =='w':
                     if (self.row+1, self.col-1) == isEnPassantPossible:
                         attackingPiece = blockingPiece = False
                         if kingRow == self.row:
@@ -164,6 +162,7 @@ class Pawn(Piece):
                                 square = board[self.row][i]
                                 if square != None and square.colour == enemyColour and (square.identity[1] == 'R' or square.identity[1] =='Q'):
                                     attackingPiece =True
+                                    break
                                 elif square != None:
                                     blockingPiece = True
 
@@ -180,7 +179,7 @@ class Pawn(Piece):
                             moves.append(Move((self.row, self.col), (self.row+1, self.col+1), board))
                     #capturing blank square (enPassant)
             elif self.col < 7 and board[self.row][self.col+1] != None:
-                if board[self.row][self.col+1].colour =='w':
+                if not piecePinned and board[self.row][self.col+1].colour =='w':
                     if (self.row+1, self.col+1) == isEnPassantPossible:
                         attackingPiece = blockingPiece = False
                         if kingRow == self.row:
@@ -198,6 +197,7 @@ class Pawn(Piece):
                                 square = board[self.row][i]
                                 if square != None and square.colour == enemyColour and (square.identity[1] == 'R' or square.identity[1] =='Q'):
                                     attackingPiece =True
+                                    break
                                 elif square != None:
                                     blockingPiece = True
 

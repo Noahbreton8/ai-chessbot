@@ -29,7 +29,7 @@ def main():
     currSelection = () #keeps track of current choice
     playerMoves = [] #keeps track of at most 2 choices for moving pieces
 
-    player1 = True #True if a human player, false if the AI plays
+    player1 = False #True if a human player, false if the AI plays
     player2 = False #Same as player 1
 
     gameOn = True
@@ -138,6 +138,7 @@ handles drawing everything on the screen
 def drawGameState(screen, gs, validMoves = [], sqSelected = ()):
     drawBoard(screen)
     highlightSqaures(screen, gs, validMoves, sqSelected)
+    #highlightPieces(screen, gs)
     drawPieces(screen, gs)
 
 '''
@@ -158,7 +159,7 @@ def highlightSqaures(screen, gs, moves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
         if gs.board[r][c] != None and gs.board[r][c].colour == ('w' if gs.whiteTurn else 'b'):
-            #highlight sqaure
+            #highlight square
             s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
             s.set_alpha(100)
             s.fill(game.Color('red'))
@@ -179,6 +180,24 @@ def drawPieces(screen, gs):
             #pieces draw themselves
             if gs.board[row][col] != None:
                 gs.board[row][col].draw(game, screen, SQUARE_SIZE)
+
+'''
+Function for testing the white and black piece arrays
+'''
+def highlightPieces(screen, gs):
+    whitePieces = gs.whitePieces
+    blackPieces = gs.blackPieces
+    for r, c in whitePieces:
+        s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
+        s.set_alpha(100)
+        s.fill(game.Color('purple'))
+        screen.blit(s, (c*SQUARE_SIZE, r*SQUARE_SIZE))
+    
+    for r, c in blackPieces:
+        s = game.Surface((SQUARE_SIZE, SQUARE_SIZE))
+        s.set_alpha(100)
+        s.fill(game.Color('green'))
+        screen.blit(s, (c*SQUARE_SIZE, r*SQUARE_SIZE))
 
 '''
 Drawing the endgame screen whether it's a checkmate or stalemate
