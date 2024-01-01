@@ -13,7 +13,7 @@ filesToCols = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 colsToFiles = {v: k for k, v in filesToCols.items()}
 #starting fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 class GameState():
-    def __init__(self, game, fen = '8/2p5/8/KP1P3r/R4p1k/8/4P1P1/8 w - -'):
+    def __init__(self, game, fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'):
         self.moveLog = []
         self.checkmate = False
         self.stalemate = False
@@ -21,6 +21,8 @@ class GameState():
         self.inCheck2 = False
         self.pins = []
         self.checks = []
+        self.whitePieces = set()
+        self.blackPieces = set()
 
         self.loadFenPosition(game, fen)
         
@@ -46,18 +48,40 @@ class GameState():
                     self.board[row][col] = King(game, row, col, colour+identity)
                     if colour == 'w':
                         self.wKingPos = (row, col)
+                        self.whitePieces.add((row, col))
                     else:
                         self.bKingPos = (row, col)
+                        self.blackPieces.add((row, col))
                 elif identity == 'R':
                     self.board[row][col] = Rook(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.whitePieces.add((row, col))
+                    else:
+                        self.blackPieces.add((row, col))
                 elif identity == 'N':
                     self.board[row][col] = Knight(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.whitePieces.add((row, col))
+                    else:
+                        self.blackPieces.add((row, col))
                 elif identity == 'B':
                     self.board[row][col] = Bishop(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.whitePieces.add((row, col))
+                    else:
+                        self.blackPieces.add((row, col))
                 elif identity == 'Q':
                     self.board[row][col] = Queen(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.whitePieces.add((row, col))
+                    else:
+                        self.blackPieces.add((row, col))
                 elif identity == 'P':
                     self.board[row][col] = Pawn(game, row, col, colour+identity)
+                    if colour == 'w':
+                        self.whitePieces.add((row, col))
+                    else:
+                        self.blackPieces.add((row, col))
                 col += 1
 
         #setting up start
@@ -79,6 +103,18 @@ class GameState():
 
     def movePiece(self, move):
         self.board[move.startRow][move.startCol].moveTo(move.endRow, move.endCol, self.board)
+
+        if self.whiteTurn:
+            self.whitePieces.remove((move.startRow, move.startCol))
+            self.whitePieces.add((move.endRow, move.endCol))
+            if move.capturedSquare != None:
+                self.blackPieces.discard((move.endRow, move.endCol)) #Safer to use discard than remove cause piece might not be there cause of en passant
+        else:
+            self.blackPieces.remove((move.startRow, move.startCol))
+            self.blackPieces.add((move.endRow, move.endCol))
+            if move.capturedSquare != None:
+                self.whitePieces.discard((move.endRow, move.endCol)) #Safer to use discard than remove cause piece might not be there cause of en passant
+
         self.whiteTurn = not self.whiteTurn
         self.moveLog.append(move)
 
@@ -115,6 +151,10 @@ class GameState():
         #enpassant
         if move.isEnPassantMove:
             self.board[move.startRow][move.endCol] = None
+            if self.whiteTurn:
+                self.whitePieces.remove((move.startRow, move.endCol))
+            else:
+                self.blackPieces.remove((move.startRow, move.endCol))
 
         #update enPassant var on 2 square advances
         if ('wP' == move.movingPiece.identity or 'bP' == move.movingPiece.identity) and abs(move.startRow - move.endRow) == 2: 
@@ -131,10 +171,22 @@ class GameState():
             #king side castle
             if move.endCol - move.startCol == 2:
                 self.board[move.endRow][move.endCol+1].moveTo(move.endRow, move.endCol-1, self.board)
+                if move.movingPiece.identity == "wK":
+                    self.whitePieces.remove((move.endRow, move.endCol+1))
+                    self.whitePieces.add((move.endRow, move.endCol-1))
+                elif move.movingPiece.identity == "bK":
+                    self.blackPieces.remove((move.endRow, move.endCol+1))
+                    self.blackPieces.add((move.endRow, move.endCol-1))
             
             #queen side castle
             else:
                 self.board[move.endRow][move.endCol-2].moveTo(move.endRow, move.endCol+1, self.board)
+                if move.movingPiece.identity == "wK":
+                    self.whitePieces.remove((move.endRow, move.endCol-2))
+                    self.whitePieces.add((move.endRow, move.endCol+1))
+                elif move.movingPiece.identity == "bK":
+                    self.blackPieces.remove((move.endRow, move.endCol-2))
+                    self.blackPieces.add((move.endRow, move.endCol+1))
 
         #castle rights
         self.updateCastleRights(move)
@@ -145,6 +197,19 @@ class GameState():
         if len(self.moveLog) != 0:
             move = self.moveLog.pop()
             self.board[move.endRow][move.endCol].moveTo(move.startRow, move.startCol, self.board)
+
+            if self.whiteTurn:
+                self.blackPieces.remove((move.endRow, move.endCol))
+                self.blackPieces.add((move.startRow, move.startCol))
+                if move.capturedSquare != None and not move.isEnPassantMove:
+                    self.whitePieces.add((move.endRow, move.endCol))
+                
+            else:
+                self.whitePieces.remove((move.endRow, move.endCol))
+                self.whitePieces.add((move.startRow, move.startCol))
+                if move.capturedSquare != None and not move.isEnPassantMove:
+                    self.blackPieces.add((move.endRow, move.endCol))
+
             self.board[move.endRow][move.endCol] = move.capturedSquare
             self.whiteTurn = not self.whiteTurn
 
@@ -169,6 +234,10 @@ class GameState():
                 #leave blank square blank
                 self.board[move.endRow][move.endCol] = None 
                 self.board[move.startRow][move.endCol] = move.capturedSquare
+                if self.whiteTurn:
+                    self.blackPieces.add((move.startRow, move.endCol))
+                else:
+                    self.whitePieces.add((move.startRow, move.endCol))
                 # self.isEnPassantPossible = (move.endRow, move.endCol) DONT NEED
 
             self.enPassanPossibleLog.pop()
@@ -188,10 +257,22 @@ class GameState():
                 #king side castle
                 if move.endCol - move.startCol == 2:
                     self.board[move.endRow][move.endCol-1].moveTo(move.endRow, move.endCol+1, self.board)
+                    if move.movingPiece.identity == "wK":
+                        self.whitePieces.add((move.endRow, move.endCol+1))
+                        self.whitePieces.remove((move.endRow, move.endCol-1))
+                    elif move.movingPiece.identity == "bK":
+                        self.blackPieces.add((move.endRow, move.endCol+1))
+                        self.blackPieces.remove((move.endRow, move.endCol-1))
                 
                 #queen side castle
                 else:
                     self.board[move.endRow][move.endCol+1].moveTo(move.endRow, move.endCol-2, self.board)
+                    if move.movingPiece.identity == "wK":
+                        self.whitePieces.add((move.endRow, move.endCol-2))
+                        self.whitePieces.remove((move.endRow, move.endCol+1))
+                    elif move.movingPiece.identity == "bK":
+                        self.blackPieces.add((move.endRow, move.endCol-2))
+                        self.blackPieces.remove((move.endRow, move.endCol+1))
 
         self.checkmate = False
         self.stalemate = False
@@ -232,17 +313,37 @@ class GameState():
 
     def getAllPossibleMoves(self):
         moves = []
-        for r in range(8):
-            for c in range(8):
-                if self.board[r][c] != None:
-                    piece = self.board[r][c]
-                    if piece.isColour(self.whiteTurn):
-                        if isinstance(piece, Pawn):
-                            moves, self.pins = piece.getMoves(moves, self.board, self.isEnPassantPossible, self.pins, self)
-                        elif isinstance(piece, King):
-                            moves = piece.getMoves(moves, self.board, self)
-                        else: 
-                            moves, self.pins = piece.getMoves(moves, self.board, self.pins)    
+
+        if self.whiteTurn:
+            for r, c in self.whitePieces:
+                piece = self.board[r][c]
+                if isinstance(piece, Pawn):
+                    moves, self.pins = piece.getMoves(moves, self.board, self.isEnPassantPossible, self.pins, self)
+                elif isinstance(piece, King):
+                    moves = piece.getMoves(moves, self.board, self)
+                else: 
+                    moves, self.pins = piece.getMoves(moves, self.board, self.pins)
+        else:
+            for r, c in self.blackPieces:
+                piece = self.board[r][c]
+                if isinstance(piece, Pawn):
+                    moves, self.pins = piece.getMoves(moves, self.board, self.isEnPassantPossible, self.pins, self)
+                elif isinstance(piece, King):
+                    moves = piece.getMoves(moves, self.board, self)
+                else: 
+                    moves, self.pins = piece.getMoves(moves, self.board, self.pins)
+
+        # for r in range(8):
+        #     for c in range(8):
+        #         if self.board[r][c] != None:
+        #             piece = self.board[r][c]
+        #             if piece.isColour(self.whiteTurn):
+        #                 if isinstance(piece, Pawn):
+        #                     moves, self.pins = piece.getMoves(moves, self.board, self.isEnPassantPossible, self.pins, self)
+        #                 elif isinstance(piece, King):
+        #                     moves = piece.getMoves(moves, self.board, self)
+        #                 else: 
+        #                     moves, self.pins = piece.getMoves(moves, self.board, self.pins)    
         return moves
         
     def getAllValidMoves(self):

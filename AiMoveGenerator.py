@@ -141,54 +141,15 @@ def findBestMove(gs, validMoves):
     nextMove = None
     counter = 0
     startTime = time.time()
-    #findMoveNegaMaxAB(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteTurn else -1)
     findMoveNegaMaxABv2(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, True if gs.whiteTurn else False)
     endtime = time.time()
     print(counter)
     print(endtime - startTime)
     return nextMove
 
-
-def findMoveNegaMaxAB(gs, validMoves, depth, alpha, beta, turnMultiplier):
-    global nextMove, counter
-    counter +=1
-    if depth == 0:
-        return turnMultiplier * scoreBoard(gs)
-
-    #add move ordering -check captures
-    maxScore = -CHECKMATE-1
-    if len(validMoves) == 0:
-        if gs.checkmate:
-            if gs.whiteTurn:
-                maxScore = -CHECKMATE 
-            else:
-                maxScore = CHECKMATE
-            
-        elif gs.stalemate:
-            maxScore = STALEMATE
-
-    for move in validMoves:
-        gs.movePiece(move)
-        nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMaxAB(gs, nextMoves, depth -1, beta, alpha, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
-            if depth == DEPTH:
-                nextMove = move
-                print(move.moveId, maxScore)
-        gs.undoMove()
-        #prune
-        if maxScore > alpha:
-            alpha = maxScore
-
-        if alpha >= beta:
-            break
-
-    return maxScore
-
-
 def findMoveNegaMaxABv2(gs, validMoves, depth, alpha, beta, maximize):
-    global nextMove
+    global nextMove, counter
+    counter+=1
     if depth == 0 or gs.checkmate or gs.stalemate or len(validMoves) == 0:
         if depth == 0:
             return scoreBoard(gs)
@@ -246,67 +207,24 @@ def scoreBoard(gs):
         return STALEMATE
 
     score = 0
-    for row in range(8):
-        for col in range(8):
-            square = gs.board[row][col]
-            if square != None:
-                if square.colour == 'w':
-                    score += pieceScore[square.identity[1]] + piecePositionScoreW[square.identity[1]][row][col]
 
-                elif square.colour == 'b':
-                    score -= pieceScore[square.identity[1]] + piecePositionScoreB[square.identity[1]][row][col]
+    for r, c in gs.whitePieces:
+        piece = gs.board[r][c]
+        score += pieceScore[piece.identity[1]] + piecePositionScoreW[piece.identity[1]][r][c]
+    
+    for r, c in gs.blackPieces:
+        piece = gs.board[r][c]
+        score -= pieceScore[piece.identity[1]] + piecePositionScoreB[piece.identity[1]][r][c]
+
+    #Old way of doing it
+    # for row in range(8):
+    #     for col in range(8):
+    #         square = gs.board[row][col]
+    #         if square != None:
+    #             if square.colour == 'w':
+    #                 score += pieceScore[square.identity[1]] + piecePositionScoreW[square.identity[1]][row][col]
+
+    #             elif square.colour == 'b':
+    #                 score -= pieceScore[square.identity[1]] + piecePositionScoreB[square.identity[1]][row][col]
 
     return score
-
-
-def makeBestMinMaxMove(gs, validMoves, depth, whiteTurn):
-    global nextMove 
-    if depth == 0:
-        return scoreBoard(gs)
-    
-    if whiteTurn:
-        maxScore = -CHECKMATE
-        for move in validMoves:
-            gs.movePiece(move)
-            nextMoves = gs.getValidMoves()
-            score = makeBestMinMaxMove(gs, nextMoves, depth -1, False)
-            if score > maxScore:
-                maxScore = score
-                if depth == DEPTH:
-                    nextMove = move
-            gs.undoMove()
-        return maxScore
-    
-    else:
-        minScore = CHECKMATE
-        for move in validMoves:
-            gs.movePiece(move)
-            nextMoves = gs.getValidMoves()
-            score = makeBestMinMaxMove(gs, nextMoves, depth -1, True)
-            if score < minScore:
-                minScore = score
-                if depth == DEPTH:
-                    nextMove = move
-            gs.undoMove()
-        return minScore
-    
-def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
-    global nextMove, counter
-    counter +=1
-    if depth == 0:
-        return turnMultiplier * scoreBoard(gs)
-    
-    maxScore = -CHECKMATE
-    for move in validMoves:
-        gs.movePiece(move)
-        nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMax(gs, nextMoves, depth -1, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
-            if depth == DEPTH:
-                nextMove = move
-        gs.undoMove()
-    return maxScore
-
-def makeBestMoveRandom(gs, validMoves):
-    return validMoves[random.randint(0, len(validMoves)-1)]

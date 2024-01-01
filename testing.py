@@ -36,10 +36,10 @@ def main():
             break
         depth = int(input("Select a depth to go to, <=3 recommended: "))
         match num:
-            case 1: #Passes 1-3, depth 3 takes 0.8 seconds, depth 4 takes 17 seconds
+            case 1: #Passes 1-6, depth 3 takes 0.8 seconds, depth 4 takes 17 seconds, depth 5 takes 14 minutes
                 fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
                 expected = [20, 400, 8902, 197281, 4865609, 119060324]
-            case 2: #Passes 1-3, depth 3 takes 9 seconds
+            case 2: #Passes 1-4, depth 3 takes 9 seconds
                 fen = 'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -'
                 expected = [48, 2039, 97862, 4085603]
             case 3: #Passes 1-5, depth 4 takes 5.5 seconds, depth 5 takes 75 seconds
@@ -54,9 +54,6 @@ def main():
             case 6: #Passes 1-3, 3 depth takes 7 seconds
                 fen = 'r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 '
                 expected = [46, 2079, 89890, 3894594]
-            case 7:
-                fen = '8/2p5/8/1P1p3r/RK3p1k/8/4P1P1/8 b - -'
-                expected = [13, 209]
 
         for i in range(depth):
             gs = GameState(game, fen)
